@@ -1,31 +1,33 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.13;
+
 contract MultiSigWallet {
-//定义变量
-address[] public owners;
-mapping (address => uint) isOwner;
-uint256 public  required;
-Transaction[] public transactions;
-mapping (uint => mapping(address => bool)) public requiredConfirmations; //记录交易的确认状态
+    // 定义变量
+    address[] public owners;
+    mapping (address => uint) isOwner;
+    uint256 public required;
+    Transaction[] public transactions;
+    mapping (uint => mapping(address => bool)) public isConfirmed; // 记录交易的确认状态
 
-//定义事件，分别有交易事件、确认事件、提交交易事件、撤销交易事件、存款事件
-event Deposit(address indexed sender, uint256 amount); // 存款事件
-event Submit(uint256 indexed txId); // 提交交易事件
-event Confirm(address indexed owner, uint256 indexed txId); // 确认交易事件
-event Revoke(address indexed owner, uint256 indexed txId); // 撤销确认事件
-event Execute(uint256 indexed txId); // 执行交易事件
+    // 定义事件
+    event Deposit(address indexed sender, uint256 amount); // 存款事件
+    event Submit(uint256 indexed txId); // 提交交易事件
+    event Confirm(address indexed owner, uint256 indexed txId); // 确认交易事件
+    event Revoke(address indexed owner, uint256 indexed txId); // 撤销确认事件
+    event Execute(uint256 indexed txId); // 执行交易事件
 
-//交易结构体
-struct Transaction {
-    address receiver;
-    uint256 amount;
-    bytes memory data;
-    bool executed;
-    uint256 ConfirmCount;
-   }
+    // 交易结构体
+    struct Transaction {
+        address to;
+        uint256 value;
+        bytes data;
+        bool executed;
+        uint256 confirmations;
+    }
 
-   //多个修饰符，必须为多签人，未执行，未确认，交易必须存在
-   // 修饰符：仅多签持有人
+    // 修饰符：仅多签持有人
     modifier onlyOwner() {
-        require(isOwner[msg.sender], "Not owner");
+        require(isOwner[msg.sender] > 0, "Not owner");
         _;
     }
 
@@ -47,28 +49,28 @@ struct Transaction {
         _;
     }
 
-
-//构造函数
-constructor(address[] memory _owners, uint256 _required) {
+    // 构造函数
+    constructor(address[] memory _owners, uint256 _required) {
         require(_owners.length > 0, "Owners required");
         require(_required > 0 && _required <= _owners.length, "Invalid required number of confirmations");
 
         for (uint256 i = 0; i < _owners.length; i++) {
             address owner = _owners[i];
             require(owner != address(0), "Invalid owner");
-            require(!isOwner[owner], "Owner not unique");
+            require(isOwner[owner] == 0, "Owner not unique");
 
-            isOwner[owner] = true;
+            isOwner[owner] = 1;
             owners.push(owner);
         }
 
         required = _required;
     }
-receive() external payable {
-    emit Deposit(msg.sender, msg.value);
-}
 
-/**
+    receive() external payable {
+        emit Deposit(msg.sender, msg.value);
+    }
+
+    /**
      * @dev 提交交易提案
      * @param _to 目标地址
      * @param _value 转账金额
