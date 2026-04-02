@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
+import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Utils.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
@@ -69,6 +70,22 @@ contract UpgradeableNFT is Initializable, ERC721Upgradeable, ERC721URIStorageUpg
         bytes4 interfaceId
     ) public view override(ERC721Upgradeable, ERC721URIStorageUpgradeable) returns (bool) {
         return super.supportsInterface(interfaceId);
+    }
+
+    /**
+     * @dev 获取逻辑合约（实现合约）地址
+     * @return 逻辑合约地址
+     */
+    function getImplementationAddress() external view returns (address) {
+        return ERC1967Utils.getImplementation();
+    }
+
+    /**
+     * @dev 获取管理员地址
+     * @return 管理员地址
+     */
+    function getAdminAddress() external view returns (address) {
+        return owner();
     }
 
     /**
