@@ -92,7 +92,7 @@ contract Bank {
     }
 
     //取款
-    function withdraw(uint256 amount) external onlyAdmin noReentrant {
+    function _withdraw(uint256 amount) internal {
         require(amount > 0, "Withdrawal amount must be greater than zero");
 
         uint256 balance = address(this).balance;
@@ -102,6 +102,10 @@ contract Bank {
         require(success, "Transfer failed");
 
         emit Withdrawal(amount);
+    }
+
+    function withdraw(uint256 amount) public onlyAdmin noReentrant {
+        _withdraw(amount);
     }
 
         function getDeposit(address user) public view returns (uint256) {

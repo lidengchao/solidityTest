@@ -33,14 +33,6 @@ contract Bigbank is Bank {
     /// @notice Withdraw `amount` wei from the BigBank to the admin address (Bank.admin).
     /// @dev Only callable by the `admin` (as used by `Bank`) and protected by `noReentrant`.
     function withdrawqukuan(uint256 amount) external onlyAdmin noReentrant {
-        require(amount > 0, "Withdrawal amount must be greater than zero");
-
-        uint256 balance = address(this).balance;
-        require(balance >= amount, "Insufficient balance in the bank");
-
-        (bool success, ) = payable(admin).call{value: amount}("");
-        require(success, "Transfer failed");
-
-        emit Withdrawal(amount);
+        _withdraw(amount);
     }
 }
