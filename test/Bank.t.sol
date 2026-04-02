@@ -9,7 +9,7 @@ contract BankTest is Test {
     address alice = address(0x1);
     address bob = address(0x2);
 
-    // allow this test contract to receive ether from Bank.Withdraw
+    // allow this test contract to receive ether from Bank.withdraw
     receive() external payable {}
 
     function setUp() public {
@@ -39,7 +39,7 @@ contract BankTest is Test {
         bank.deposit{value: 1 ether}();
         assertEq(bank.getTotalDeposit(), 1 ether);
 
-        bank.Withdraw(1 ether);
+        bank.withdraw(1 ether);
         assertEq(bank.getTotalDeposit(), 0);
     }
 }

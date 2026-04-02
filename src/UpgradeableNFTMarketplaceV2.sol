@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/interfaces/IERC1363Receiver.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Utils.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -18,6 +19,8 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
  * 2. 用户只需一次setApproveAll给市场合约，后续可使用签名上架
  */
 contract UpgradeableNFTMarketplaceV2 is Initializable, IERC1363Receiver, OwnableUpgradeable, UUPSUpgradeable {
+    using MessageHashUtils for bytes32;
+
     // NFT上架信息
     struct Listing {
         address seller;
@@ -98,7 +101,7 @@ contract UpgradeableNFTMarketplaceV2 is Initializable, IERC1363Receiver, Ownable
         
         // 构建签名消息
         bytes32 messageHash = keccak256(abi.encodePacked(tokenId, price, address(this)));
-        bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(messageHash);
+        bytes32 ethSignedMessageHash = messageHash.toEthSignedMessageHash();
         
         // 恢复签名者地址
         address seller = ECDSA.recover(ethSignedMessageHash, v, r, s);
